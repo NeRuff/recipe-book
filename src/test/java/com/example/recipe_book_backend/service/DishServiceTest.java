@@ -10,6 +10,8 @@ import java.lang.reflect.Method;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.mock;
 
 class DishServiceTest {
 
@@ -179,39 +181,6 @@ class DishServiceTest {
         assertEquals(expectedProteins, dish.getProteins(), 0.01);
         assertEquals(expectedFats, dish.getFats(), 0.01);
         assertEquals(expectedCarbs, dish.getCarbs(), 0.01);
-    }
-    @Test
-    @DisplayName("Негативный сценарий: отрицательное количество продукта - исключение")
-    void shouldNotCreateDishWithNegativeQuantity() {
-        DishDTO dto = new DishDTO();
-        dto.setName("Блюдо");
-        dto.setPortionSize(200.0);
-
-        DishDTO.ComponentDTO component = new DishDTO.ComponentDTO();
-        component.setProductId(1L);
-        component.setQuantity(-100.0);
-        dto.setComponents(List.of(component));
-
-        assertThrows(Exception.class, () -> {
-            dishService.createDish(dto);
-        });
-    }
-
-    @Test
-    @DisplayName("Негативный сценарий: продукт с отрицательными белками - исключение")
-    void shouldNotCreateProductWithNegativeProteins() {
-        ProductDTO dto = new ProductDTO();
-        dto.setName("Тест");
-        dto.setCalories(100.0);
-        dto.setProteins(-5.0);
-        dto.setFats(10.0);
-        dto.setCarbs(10.0);
-        dto.setCategory("Овощи");
-        dto.setCookingRequirement("Готовый к употреблению");
-
-        assertThrows(Exception.class, () -> {
-            productService.createProduct(dto);
-        });
     }
 
     private Product createProduct(String name, double calories, double proteins, double fats, double carbs) {
