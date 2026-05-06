@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Книга рецептов</title>
+    <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+<div class="container">
+    <h1>📖 Книга рецептов</h1>
+
+    <div class="tabs">
+        <button class="tab-btn active" data-tab="products">Продукты</button>
+        <button class="tab-btn" data-tab="dishes">Блюда</button>
+    </div>
+
+    <div id="products-tab" class="tab-content active">
+        <div class="toolbar">
+            <button onclick="showProductForm()">+ Добавить продукт</button>
+            <div class="filters">
+                <input type="text" id="productSearch" placeholder="Поиск по названию..." onkeyup="loadProducts()">
+                <select id="productCategory" onchange="loadProducts()">
+                    <option value="">Все категории</option>
+                    <option value="Овощи">Овощи</option>
+                    <option value="Мясной">Мясной</option>
+                    <option value="Жидкость">Жидкость</option>
+                    <option value="Замороженный">Замороженный</option>
+                    <option value="Зелень">Зелень</option>
+                    <option value="Специи">Специи</option>
+                    <option value="Крупы">Крупы</option>
+                    <option value="Консервы">Консервы</option>
+                    <option value="Сладости">Сладости</option>
+                </select>
+                <select id="productCooking" onchange="loadProducts()">
+                    <option value="">Любая готовка</option>
+                    <option value="Готовый к употреблению">Готовый к употреблению</option>
+                    <option value="Полуфабрикат">Полуфабрикат</option>
+                    <option value="Требует приготовления">Требует приготовления</option>
+                </select>
+                <div class="flag-filters">
+                    <label><input type="checkbox" value="Веган" onchange="loadProducts()"> Веган</label>
+                    <label><input type="checkbox" value="Без глютена" onchange="loadProducts()"> Без глютена</label>
+                    <label><input type="checkbox" value="Без сахара" onchange="loadProducts()"> Без сахара</label>
+                </div>
+            </div>
+        </div>
+        <div id="productsList" class="cards-grid"></div>
+    </div>
+
+    <div id="dishes-tab" class="tab-content">
+        <div class="toolbar">
+            <button onclick="showDishForm()">+ Добавить блюдо</button>
+            <div class="filters">
+                <input type="text" id="dishSearch" placeholder="Поиск по названию..." onkeyup="loadDishes()">
+                <select id="dishCategory" onchange="loadDishes()">
+                    <option value="">Все категории</option>
+                    <option value="Десерт">Десерт</option>
+                    <option value="Первое">Первое</option>
+                    <option value="Второе">Второе</option>
+                    <option value="Напиток">Напиток</option>
+                    <option value="Салат">Салат</option>
+                    <option value="Суп">Суп</option>
+                    <option value="Перекус">Перекус</option>
+                </select>
+                <div class="flag-filters">
+                    <label><input type="checkbox" value="Веган" onchange="loadDishes()"> Веган</label>
+                    <label><input type="checkbox" value="Без глютена" onchange="loadDishes()"> Без глютена</label>
+                    <label><input type="checkbox" value="Без сахара" onchange="loadDishes()"> Без сахара</label>
+                </div>
+            </div>
+        </div>
+        <div id="dishesList" class="cards-grid"></div>
+    </div>
+</div>
+
+<div id="productModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeProductModal()">&times;</span>
+        <h2 id="productModalTitle">Добавить продукт</h2>
+        <form id="productForm">
+            <input type="hidden" id="productId">
+            <label>Название*: <input type="text" id="prodName" required minlength="2"></label>
+            <label>Калорийность (ккал/100г)*: <input type="number" id="prodCalories" step="0.1" required></label>
+            <label>Белки (г/100г)*: <input type="number" id="prodProteins" step="0.1" required></label>
+            <label>Жиры (г/100г)*: <input type="number" id="prodFats" step="0.1" required></label>
+            <label>Углеводы (г/100г)*: <input type="number" id="prodCarbs" step="0.1" required></label>
+            <label>Состав: <textarea id="prodComposition"></textarea></label>
+            <label>Категория*:
+                <select id="prodCategory" required>
+                    <option value="Овощи">Овощи</option>
+                    <option value="Мясной">Мясной</option>
+                    <option value="Жидкость">Жидкость</option>
+                    <option value="Замороженный">Замороженный</option>
+                    <option value="Зелень">Зелень</option>
+                    <option value="Специи">Специи</option>
+                    <option value="Крупы">Крупы</option>
+                    <option value="Консервы">Консервы</option>
+                    <option value="Сладости">Сладости</option>
+                </select>
+            </label>
+            <label>Необходимость готовки*:
+                <select id="prodCooking" required>
+                    <option value="Готовый к употреблению">Готовый к употреблению</option>
+                    <option value="Полуфабрикат">Полуфабрикат</option>
+                    <option value="Требует приготовления">Требует приготовления</option>
+                </select>
+            </label>
+            <label>Флаги:
+                <label><input type="checkbox" value="Веган"> Веган</label>
+                <label><input type="checkbox" value="Без глютена"> Без глютена</label>
+                <label><input type="checkbox" value="Без сахара"> Без сахара</label>
+            </label>
+            <label>Фото (URL, через запятую): <input type="text" id="prodPhotos" placeholder="url1, url2"></label>
+            <button type="submit">Сохранить</button>
+        </form>
+    </div>
+</div>
+
+<div id="dishModal" class="modal">
+    <div class="modal-content">
+        <span class="close" onclick="closeDishModal()">&times;</span>
+        <h2 id="dishModalTitle">Добавить блюдо</h2>
+        <form id="dishForm">
+            <input type="hidden" id="dishId">
+            <label>Название*: <input type="text" id="dishName" required minlength="2"></label>
+            <label>Размер порции (г)*: <input type="number" id="dishPortion" step="0.1" required></label>
+            <label>Категория:
+                <select id="dishCategorySelect">
+                    <option value="">Выбрать</option>
+                    <option value="Десерт">Десерт</option>
+                    <option value="Первое">Первое</option>
+                    <option value="Второе">Второе</option>
+                    <option value="Напиток">Напиток</option>
+                    <option value="Салат">Салат</option>
+                    <option value="Суп">Суп</option>
+                    <option value="Перекус">Перекус</option>
+                </select>
+            </label>
+            <div id="componentsList">
+                <h4>Состав блюда:</h4>
+                <div id="componentsContainer"></div>
+                <button type="button" onclick="addComponent()">+ Добавить продукт</button>
+            </div>
+            <label>КБЖУ (можно скорректировать):</label>
+            <label>Калории: <input type="number" id="dishCalories" step="0.1"></label>
+            <label>Белки: <input type="number" id="dishProteins" step="0.1"></label>
+            <label>Жиры: <input type="number" id="dishFats" step="0.1"></label>
+            <label>Углеводы: <input type="number" id="dishCarbs" step="0.1"></label>
+            <label>Фото (URL, через запятую): <input type="text" id="dishPhotos"></label>
+            <button type="submit">Сохранить</button>
+        </form>
+    </div>
+</div>
+
+<script src="/script.js"></script>
+</body>
+</html>
