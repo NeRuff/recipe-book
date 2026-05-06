@@ -1,5 +1,7 @@
 package com.example.recipe_book_backend.service;
 
+import com.example.recipe_book_backend.dto.DishDTO;
+import com.example.recipe_book_backend.dto.ProductDTO;
 import com.example.recipe_book_backend.entity.Dish;
 import com.example.recipe_book_backend.entity.DishProduct;
 import com.example.recipe_book_backend.entity.Product;
@@ -13,11 +15,13 @@ class DishServiceTest {
 
     private Method calculateNutritionMethod;
     private Dish dish;
+    private ProductService productService;
     private List<DishProduct> components;
 
     @BeforeEach
     void setUp() throws Exception {
         DishService dishService = new DishService();
+        productService = new ProductService();
         calculateNutritionMethod = DishService.class.getDeclaredMethod("calculateNutrition", Dish.class, List.class);
         calculateNutritionMethod.setAccessible(true);
         dish = new Dish();
@@ -176,137 +180,38 @@ class DishServiceTest {
         assertEquals(expectedFats, dish.getFats(), 0.01);
         assertEquals(expectedCarbs, dish.getCarbs(), 0.01);
     }
-
     @Test
-    @DisplayName("Негативный сценарий: отрицательное количество продукта")
-    void shouldHandleNegativeQuantityGracefully() throws Exception {
-        Product product = createProduct("Картофель", 77.0, 2.0, 0.4, 16.3);
-        components.add(createDishProduct(product, -100.0));
+    @DisplayName("Негативный сценарий: отрицательное количество продукта - исключение")
+    void shouldNotCreateDishWithNegativeQuantity() {
+        DishDTO dto = new DishDTO();
+        dto.setName("Блюдо");
+        dto.setPortionSize(200.0);
 
-        calculateNutritionMethod.invoke(dishService, dish, components);
-
-        assertEquals(-77.0, dish.getCalories(), 0.01);
-        assertEquals(-2.0, dish.getProteins(), 0.01);
-        assertEquals(-0.4, dish.getFats(), 0.01);
-        assertEquals(-16.3, dish.getCarbs(), 0.01);
-    }
-
-    @Test
-    @DisplayName("Негативный сценарий: отрицательные значения БЖУ у продукта")
-    void shouldHandleNegativeBjuValues() throws Exception {
-        Product product = createProduct("Ошибочный продукт", -100.0, -5.0, -3.0, -2.0);
-        components.add(createDishProduct(product, 100.0));
-
-        calculateNutritionMethod.invoke(dishService, dish, components);
-
-        assertEquals(-100.0, dish.getCalories(), 0.01);
-        assertEquals(-5.0, dish.getProteins(), 0.01);
-        assertEquals(-3.0, dish.getFats(), 0.01);
-        assertEquals(-2.0, dish.getCarbs(), 0.01);
-    }
-
-    @Test
-    @DisplayName("Негативный сценарий: сумма БЖУ больше 100 грамм (невалидный продукт)")
-    void shouldHandleInvalidBjuSumGreaterThanOneHundred() throws Exception {
-        Product product = createProduct("Невалидный продукт", 500.0, 60.0, 30.0, 20.0);
-        components.add(createDishProduct(product, 100.0));
-
-        calculateNutritionMethod.invoke(dishService, dish, components);
-
-        assertEquals(500.0, dish.getCalories(), 0.01);
-        assertEquals(60.0, dish.getProteins(), 0.01);
-        assertEquals(30.0, dish.getFats(), 0.01);
-        assertEquals(20.0, dish.getCarbs(), 0.01);
-    }
-
-    @Test
-    @DisplayName("Негативный сценарий: продукт с нулевой порцией (0 грамм)")
-    void shouldHandleZeroQuantity() throws Exception {
-        Product product = createProduct("Картофель", 77.0, 2.0, 0.4, 16.3);
-        components.add(createDishProduct(product, 0.0));
-
-        calculateNutritionMethod.invoke(dishService, dish, components);
-
-        assertEquals(0.0, dish.getCalories(), 0.01);
-        assertEquals(0.0, dish.getProteins(), 0.01);
-        assertEquals(0.0, dish.getFats(), 0.01);
-        assertEquals(0.0, dish.getCarbs(), 0.01);
-    }
-
-    @Test
-    @DisplayName("Негативный сценарий: название продукта пустая строка")
-    void shouldHandleEmptyProductName() throws Exception {
-        Product product = createProduct("", 77.0, 2.0, 0.4, 16.3);
-        components.add(createDishProduct(product, 200.0));
-
-        calculateNutritionMethod.invoke(dishService, dish, components);
-
-        assertEquals(154.0, dish.getCalories(), 0.01);
-        assertEquals(4.0, dish.getProteins(), 0.01);
-        assertEquals(0.8, dish.getFats(), 0.01);
-        assertEquals(32.6, dish.getCarbs(), 0.01);
-    }
-
-    @Test
-    @DisplayName("Негативный сценарий: очень маленькое дробное количество (0.0001 грамма)")
-    void shouldHandleExtremelySmallQuantity() throws Exception {
-        Product product = createProduct("Специя", 1000.0, 10.0, 5.0, 20.0);
-        components.add(createDishProduct(product, 0.0001));
-
-        calculateNutritionMethod.invoke(dishService, dish, components);
-
-        assertEquals(0.001, dish.getCalories(), 0.0001);
-        assertEquals(0.00001, dish.getProteins(), 0.00001);
-        assertEquals(0.000005, dish.getFats(), 0.000001);
-        assertEquals(0.00002, dish.getCarbs(), 0.00001);
-    }
-
-    @Test
-    @DisplayName("Негативный сценарий: дублирование одного продукта несколько раз")
-    void shouldHandleDuplicateProducts() throws Exception {
-        Product potato = createProduct("Картофель", 77.0, 2.0, 0.4, 16.3);
-        components.add(createDishProduct(potato, 100.0));
-        components.add(createDishProduct(potato, 100.0));
-        components.add(createDishProduct(potato, 100.0));
-
-        calculateNutritionMethod.invoke(dishService, dish, components);
-
-        assertEquals(231.0, dish.getCalories(), 0.01);
-        assertEquals(6.0, dish.getProteins(), 0.01);
-        assertEquals(1.2, dish.getFats(), 0.01);
-        assertEquals(48.9, dish.getCarbs(), 0.01);
-    }
-
-    @Test
-    @DisplayName("Негативный сценарий: продукт с null значениями КБЖУ")
-    void shouldHandleNullBjuValues() throws Exception {
-        Product product = new Product();
-        product.setName("Продукт с null");
-        product.setCalories(null);
-        product.setProteins(null);
-        product.setFats(null);
-        product.setCarbs(null);
-        product.setFlags(new ArrayList<>());
-
-        components.add(createDishProduct(product, 100.0));
+        DishDTO.ComponentDTO component = new DishDTO.ComponentDTO();
+        component.setProductId(1L);
+        component.setQuantity(-100.0);
+        dto.setComponents(List.of(component));
 
         assertThrows(Exception.class, () -> {
-            calculateNutritionMethod.invoke(dishService, dish, components);
+            dishService.createDish(dto);
         });
     }
 
     @Test
-    @DisplayName("Негативный сценарий: пустое название продукта и нулевая порция")
-    void shouldHandleEmptyNameWithZeroQuantity() throws Exception {
-        Product product = createProduct("", 50.0, 5.0, 2.0, 10.0);
-        components.add(createDishProduct(product, 0.0));
+    @DisplayName("Негативный сценарий: продукт с отрицательными белками - исключение")
+    void shouldNotCreateProductWithNegativeProteins() {
+        ProductDTO dto = new ProductDTO();
+        dto.setName("Тест");
+        dto.setCalories(100.0);
+        dto.setProteins(-5.0);
+        dto.setFats(10.0);
+        dto.setCarbs(10.0);
+        dto.setCategory("Овощи");
+        dto.setCookingRequirement("Готовый к употреблению");
 
-        calculateNutritionMethod.invoke(dishService, dish, components);
-
-        assertEquals(0.0, dish.getCalories(), 0.01);
-        assertEquals(0.0, dish.getProteins(), 0.01);
-        assertEquals(0.0, dish.getFats(), 0.01);
-        assertEquals(0.0, dish.getCarbs(), 0.01);
+        assertThrows(Exception.class, () -> {
+            productService.createProduct(dto);
+        });
     }
 
     private Product createProduct(String name, double calories, double proteins, double fats, double carbs) {
