@@ -1,17 +1,15 @@
 package com.example.recipe_book_backend.service;
 
-import com.example.recipe_book_backend.dto.DishDTO;
-import com.example.recipe_book_backend.dto.ProductDTO;
 import com.example.recipe_book_backend.entity.Dish;
 import com.example.recipe_book_backend.entity.DishProduct;
 import com.example.recipe_book_backend.entity.Product;
 import org.junit.jupiter.api.*;
+
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.doThrow;
-import static org.mockito.Mockito.mock;
 
 class DishServiceTest {
 
@@ -181,6 +179,80 @@ class DishServiceTest {
         assertEquals(expectedProteins, dish.getProteins(), 0.01);
         assertEquals(expectedFats, dish.getFats(), 0.01);
         assertEquals(expectedCarbs, dish.getCarbs(), 0.01);
+    }
+
+    @Test
+    @DisplayName("Негативный тест: отрицательное количество продукта - должно выбросить исключение")
+    void shouldThrowExceptionWhenProductQuantityIsNegative() {
+        Product product = createProduct("Картофель", 77.0, 2.0, 0.4, 16.3);
+        DishProduct invalidDishProduct = new DishProduct();
+        invalidDishProduct.setProduct(product);
+        invalidDishProduct.setQuantity(-100.0);
+
+        components.add(invalidDishProduct);
+
+        assertThrows(Exception.class, () -> {
+            calculateNutritionMethod.invoke(dishService, dish, components);
+        });
+    }
+    @Test
+    @DisplayName("Негативный тест: отрицательные белки в продукте - должно выбросить исключение")
+    void shouldThrowExceptionWhenProductHasNegativeProteins() {
+        Product product = createProduct("Невалидный продукт", 100.0, -10.0, 5.0, 10.0);
+        components.add(createDishProduct(product, 100.0));
+
+        Exception exception = assertThrows(InvocationTargetException.class, () -> {
+            calculateNutritionMethod.invoke(dishService, dish, components);
+        });
+
+        Throwable cause = exception.getCause();
+        assertTrue(cause instanceof IllegalArgumentException);
+        assertEquals("Белки не могут быть отрицательными", cause.getMessage());
+    }
+
+    @Test
+    @DisplayName("Негативный тест: отрицательные жиры в продукте - должно выбросить исключение")
+    void shouldThrowExceptionWhenProductHasNegativeFats() {
+        Product product = createProduct("Невалидный продукт", 100.0, 10.0, -5.0, 10.0);
+        components.add(createDishProduct(product, 100.0));
+
+        Exception exception = assertThrows(InvocationTargetException.class, () -> {
+            calculateNutritionMethod.invoke(dishService, dish, components);
+        });
+
+        Throwable cause = exception.getCause();
+        assertTrue(cause instanceof IllegalArgumentException);
+        assertEquals("Жиры не могут быть отрицательными", cause.getMessage());
+    }
+
+    @Test
+    @DisplayName("Негативный тест: отрицательные углеводы в продукте - должно выбросить исключение")
+    void shouldThrowExceptionWhenProductHasNegativeCarbs() {
+        Product product = createProduct("Невалидный продукт", 100.0, 10.0, 5.0, -10.0);
+        components.add(createDishProduct(product, 100.0));
+
+        Exception exception = assertThrows(InvocationTargetException.class, () -> {
+            calculateNutritionMethod.invoke(dishService, dish, components);
+        });
+
+        Throwable cause = exception.getCause();
+        assertTrue(cause instanceof IllegalArgumentException);
+        assertEquals("Углеводы не могут быть отрицательными", cause.getMessage());
+    }
+
+    @Test
+    @DisplayName("Негативный тест: отрицательная калорийность продукта - должно выбросить исключение")
+    void shouldThrowExceptionWhenProductHasNegativeCalories() {
+        Product product = createProduct("Невалидный продукт", -100.0, 10.0, 5.0, 10.0);
+        components.add(createDishProduct(product, 100.0));
+
+        Exception exception = assertThrows(InvocationTargetException.class, () -> {
+            calculateNutritionMethod.invoke(dishService, dish, components);
+        });
+
+        Throwable cause = exception.getCause();
+        assertTrue(cause instanceof IllegalArgumentException);
+        assertEquals("Калорийность не может быть отрицательной", cause.getMessage());
     }
 
     private Product createProduct(String name, double calories, double proteins, double fats, double carbs) {

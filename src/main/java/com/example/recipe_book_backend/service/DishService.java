@@ -184,6 +184,23 @@ public class DishService {
 
         for (DishProduct dp : components) {
             Product p = dp.getProduct();
+            Double quantity = dp.getQuantity();
+
+            if (quantity == null || quantity <= 0) {
+                throw new IllegalArgumentException("Количество продукта должно быть больше 0");
+            }
+            if (p.getCalories() == null || p.getCalories() < 0) {
+                throw new IllegalArgumentException("Калорийность не может быть отрицательной");
+            }
+            if (p.getProteins() == null || p.getProteins() < 0) {
+                throw new IllegalArgumentException("Белки не могут быть отрицательными");
+            }
+            if (p.getFats() == null || p.getFats() < 0) {
+                throw new IllegalArgumentException("Жиры не могут быть отрицательными");
+            }
+            if (p.getCarbs() == null || p.getCarbs() < 0) {
+                throw new IllegalArgumentException("Углеводы не могут быть отрицательными");
+            }
             double ratio = dp.getQuantity() / 100.0;
             totalCalories += p.getCalories() * ratio;
             totalProteins += p.getProteins() * ratio;

@@ -294,3 +294,31 @@ button:hover {
     padding: 4px 10px;
     font-size: 12px;
 }
+.dates {
+    margin: 10px 0;
+    padding: 8px 0;
+    border-top: 1px solid #eee;
+    border-bottom: 1px solid #eee;
+    font-size: 11px;
+    color: #888;
+}
+
+.dates small {
+    display: block;
+    margin: 2px 0;
+}
+
+.composition {
+    margin: 10px 0;
+    font-size: 12px;
+}
+
+.composition ul {
+    margin: 5px 0 0 20px;
+    padding: 0;
+}
+
+.composition li {
+    margin: 3px 0;
+    color: #555;
+}

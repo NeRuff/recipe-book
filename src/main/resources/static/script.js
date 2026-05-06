@@ -21,16 +21,23 @@ async function loadProducts() {
 function renderProducts(products) {
     const container = document.getElementById('productsList');
     container.innerHTML = products.map(p => {
-        console.log(`Рендер ${p.name}: создаю ${p.photos?.length || 0} фото`);
+        const createdAt = p.createdAt ? new Date(p.createdAt).toLocaleString('ru-RU') : '—';
+        const updatedAt = p.updatedAt ? new Date(p.updatedAt).toLocaleString('ru-RU') : '—';
+
         return `
         <div class="card">
             <h3>${escapeHtml(p.name)}</h3>
             <div class="photos-container">
-                ${p.photos && p.photos.length ? p.photos.map(photo => `<img src="${photo}" class="product-photo" onerror="this.style.display='none'">`).join('') : '<div class="no-photo">📷 Нет фото</div>'}
+                ${p.photos && p.photos.length ? p.photos.slice(0, 3).map(photo => `<img src="${escapeHtml(photo)}" class="product-photo" onerror="this.style.display='none'">`).join('') : '<div class="no-photo">📷 Нет фото</div>'}
             </div>
             <p>🔥 ${p.calories} ккал | 🥩 ${p.proteins}g | 🧈 ${p.fats}g | 🍚 ${p.carbs}g</p>
             <p>📁 ${p.category} | ${p.cookingRequirement}</p>
             <p>🏷️ ${p.flags.join(', ') || 'нет'}</p>
+            <p>📝 Состав: ${p.composition || 'не указан'}</p>
+            <div class="dates">
+                <small>📅 Создан: ${createdAt}</small>
+                ${p.updatedAt ? `<small>✏️ Изменён: ${updatedAt}</small>` : ''}
+            </div>
             <div class="card-buttons">
                 <button onclick="editProduct(${p.id})">✏️</button>
                 <button onclick="deleteProduct(${p.id})">🗑️</button>
@@ -141,23 +148,38 @@ async function loadDishes() {
 
 function renderDishes(dishes) {
     const container = document.getElementById('dishesList');
-    container.innerHTML = dishes.map(d => `
+    container.innerHTML = dishes.map(d => {
+        const createdAt = d.createdAt ? new Date(d.createdAt).toLocaleString('ru-RU') : '—';
+        const updatedAt = d.updatedAt ? new Date(d.updatedAt).toLocaleString('ru-RU') : '—';
+
+        return `
         <div class="card">
             <h3>${escapeHtml(d.name)}</h3>
             <div class="photos-container">
                 ${d.photos && d.photos.length ? d.photos.slice(0, 3).map(photo => `<img src="${escapeHtml(photo)}" class="dish-photo" onerror="this.style.display='none'">`).join('') : '<div class="no-photo">📷 Нет фото</div>'}
-                ${d.photos && d.photos.length > 3 ? `<span class="more-photos">+${d.photos.length - 3}</span>` : ''}
             </div>
             <p>🍽️ Порция: ${d.portionSize}г</p>
             <p>🔥 ${Math.round(d.calories)} ккал | 🥩 ${d.proteins.toFixed(1)}g | 🧈 ${d.fats.toFixed(1)}g | 🍚 ${d.carbs.toFixed(1)}g</p>
             <p>📁 ${d.category}</p>
             <p>🏷️ ${d.flags.join(', ') || 'нет'}</p>
+            <div class="composition">
+                <strong>🥗 Состав:</strong>
+                <ul>
+                    ${d.components && d.components.length ? d.components.map(comp => `
+                        <li>${escapeHtml(comp.product.name)} — ${comp.quantity} г</li>
+                    `).join('') : '<li>нет продуктов</li>'}
+                </ul>
+            </div>
+            <div class="dates">
+                <small>📅 Создан: ${createdAt}</small>
+                ${d.updatedAt ? `<small>✏️ Изменён: ${updatedAt}</small>` : ''}
+            </div>
             <div class="card-buttons">
                 <button onclick="editDish(${d.id})">✏️</button>
                 <button onclick="deleteDish(${d.id})">🗑️</button>
             </div>
         </div>
-    `).join('');
+    `}).join('');
 }
 
 async function loadProductsForSelect() {
