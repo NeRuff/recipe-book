@@ -350,3 +350,11 @@ button:hover {
     margin: 3px 0;
     color: #555;
 }
+.calc-btn {
+    background: #28a745;
+    margin: 10px 0;
+}
+
+.calc-btn:hover {
+    background: #218838;
+}

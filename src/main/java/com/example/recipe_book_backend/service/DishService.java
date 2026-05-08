@@ -38,7 +38,6 @@ public class DishService {
 
         String categoryFromMacro = extractCategoryFromMacro(dto.getName());
 
-
         if (dto.getCategory() != null && !dto.getCategory().isEmpty()) {
             dish.setCategory(dto.getCategory());
         } else if (categoryFromMacro != null) {
@@ -57,12 +56,14 @@ public class DishService {
         if (dto.getFats() != null) dish.setFats(dto.getFats());
         if (dto.getCarbs() != null) dish.setCarbs(dto.getCarbs());
 
-        updateAvailableFlags(dish);
 
-        List<String> finalFlags = new ArrayList<>(dish.getFlags());
+        List<String> availableFlags = getAvailableFlags(dish);
+
+
+        List<String> finalFlags = new ArrayList<>();
         if (dto.getFlags() != null && !dto.getFlags().isEmpty()) {
             finalFlags = dto.getFlags().stream()
-                    .filter(flag -> dish.getFlags().contains(flag))
+                    .filter(availableFlags::contains)
                     .collect(Collectors.toList());
         }
         dish.setFlags(finalFlags);
@@ -98,12 +99,14 @@ public class DishService {
         if (dto.getFats() != null) dish.setFats(dto.getFats());
         if (dto.getCarbs() != null) dish.setCarbs(dto.getCarbs());
 
-        updateAvailableFlags(dish);
 
-        List<String> finalFlags = new ArrayList<>(dish.getFlags());
+        List<String> availableFlags = getAvailableFlags(dish);
+
+
+        List<String> finalFlags = new ArrayList<>();
         if (dto.getFlags() != null && !dto.getFlags().isEmpty()) {
             finalFlags = dto.getFlags().stream()
-                    .filter(flag -> dish.getFlags().contains(flag))
+                    .filter(availableFlags::contains)
                     .collect(Collectors.toList());
         }
         dish.setFlags(finalFlags);
@@ -234,5 +237,29 @@ public class DishService {
         }
 
         dish.setFlags(availableFlags);
+    }
+    private List<String> getAvailableFlags(Dish dish) {
+        List<String> availableFlags = new ArrayList<>();
+
+        if (dish.getComponents() == null || dish.getComponents().isEmpty()) {
+            return availableFlags;
+        }
+
+        boolean allVegan = true;
+        boolean allGlutenFree = true;
+        boolean allSugarFree = true;
+
+        for (DishProduct dp : dish.getComponents()) {
+            Product p = dp.getProduct();
+            if (!p.getFlags().contains("Веган")) allVegan = false;
+            if (!p.getFlags().contains("Без глютена")) allGlutenFree = false;
+            if (!p.getFlags().contains("Без сахара")) allSugarFree = false;
+        }
+
+        if (allVegan) availableFlags.add("Веган");
+        if (allGlutenFree) availableFlags.add("Без глютена");
+        if (allSugarFree) availableFlags.add("Без сахара");
+
+        return availableFlags;
     }
 }

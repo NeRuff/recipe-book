@@ -142,6 +142,15 @@
                 <div id="componentsContainer"></div>
                 <button type="button" onclick="addComponent()">+ Добавить продукт</button>
             </div>
+            <div id="dishFlagsBlock">
+                <h4>Дополнительные флаги:</h4>
+                <div id="dishFlagsContainer">
+                    <label><input type="checkbox" value="Веган"> 🥬 Веган</label>
+                    <label><input type="checkbox" value="Без глютена"> 🌾 Без глютена</label>
+                    <label><input type="checkbox" value="Без сахара"> 🍬 Без сахара</label>
+                </div>
+            </div>
+            <button type="button" class="calc-btn" onclick="calculateDishNutrition()">🧮 Рассчитать КБЖУ</button>
             <label>КБЖУ (можно скорректировать):</label>
             <label>Калории: <input type="number" id="dishCalories" step="0.01"></label>
             <label>Белки: <input type="number" id="dishProteins" step="0.01"></label>

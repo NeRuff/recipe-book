@@ -49,6 +49,9 @@ public class Dish {
     @Column(name = "flag")
     private List<String> flags = new ArrayList<>();
 
+    @Transient
+    private List<String> availableFlags = new ArrayList<>();
+
     @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -90,4 +93,7 @@ public class Dish {
     public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
     public LocalDateTime getUpdatedAt() { return updatedAt; }
     public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+
+    public List<String> getAvailableFlags() { return availableFlags; }
+    public void setAvailableFlags(List<String> availableFlags) { this.availableFlags = availableFlags; }
 }

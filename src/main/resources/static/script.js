@@ -154,6 +154,45 @@ async function loadDishes() {
     const dishes = await res.json();
     renderDishes(dishes);
 }
+async function calculateDishNutrition() {
+    const components = getComponents();
+
+    if (components.length === 0) {
+        alert('Добавьте хотя бы один продукт для расчёта КБЖУ');
+        return;
+    }
+
+    const productsRes = await fetch('/api/products');
+    const allProducts = await productsRes.json();
+
+    let totalCalories = 0;
+    let totalProteins = 0;
+    let totalFats = 0;
+    let totalCarbs = 0;
+
+    for (const comp of components) {
+        const product = allProducts.find(p => p.id === comp.productId);
+        if (!product) {
+            console.warn(`Продукт с ID ${comp.productId} не найден`);
+            continue;
+        }
+
+        const ratio = comp.quantity / 100;
+        totalCalories += product.calories * ratio;
+        totalProteins += product.proteins * ratio;
+        totalFats += product.fats * ratio;
+        totalCarbs += product.carbs * ratio;
+    }
+
+    document.getElementById('dishCalories').value = totalCalories.toFixed(2);
+    document.getElementById('dishProteins').value = totalProteins.toFixed(2);
+    document.getElementById('dishFats').value = totalFats.toFixed(2);
+    document.getElementById('dishCarbs').value = totalCarbs.toFixed(2);
+
+
+    await updateDishFlagsAvailability();
+
+}
 
 function renderDishes(dishes) {
     const container = document.getElementById('dishesList');
@@ -205,13 +244,18 @@ function addComponent() {
     const div = document.createElement('div');
     div.className = 'component-row';
     div.innerHTML = `
-        <select id="comp_product_${idx}" style="width:200px">
+        <select id="comp_product_${idx}" style="width:200px" onchange="updateDishFlagsAvailability()">
             ${productOptions.map(p => `<option value="${p.id}">${escapeHtml(p.name)}</option>`).join('')}
         </select>
-        <input type="number" id="comp_quantity_${idx}" placeholder="Количество (г)" step="0.1" style="width:100px">
-        <button type="button" onclick="this.parentElement.remove()">✖</button>
+        <input type="number" id="comp_quantity_${idx}" placeholder="Количество (г)" step="0.1" style="width:100px" onchange="updateDishFlagsAvailability()">
+        <button type="button" onclick="removeComponent(this, ${idx})">✖</button>
     `;
     container.appendChild(div);
+}
+
+function removeComponent(button, idx) {
+    button.parentElement.remove();
+    updateDishFlagsAvailability();
 }
 
 function getComponents() {
@@ -237,6 +281,13 @@ async function showDishForm() {
     document.getElementById('componentsContainer').innerHTML = '';
     await loadProductsForSelect();
     addComponent();
+
+    const checkboxes = document.querySelectorAll('#dishFlagsContainer input');
+    checkboxes.forEach(cb => {
+        cb.checked = false;
+        cb.disabled = true;
+    });
+
     document.getElementById('dishModal').style.display = 'block';
 }
 
@@ -262,15 +313,23 @@ async function editDish(id) {
         const div = document.createElement('div');
         div.className = 'component-row';
         div.innerHTML = `
-            <select id="comp_product_${idx}" style="width:200px">
+            <select id="comp_product_${idx}" style="width:200px" onchange="updateDishFlagsAvailability()">
                 ${productOptions.map(p => `<option value="${p.id}" ${p.id === comp.product.id ? 'selected' : ''}>${escapeHtml(p.name)}</option>`).join('')}
             </select>
-            <input type="number" id="comp_quantity_${idx}" value="${comp.quantity}" placeholder="Количество (г)" step="0.1" style="width:100px">
-            <button type="button" onclick="this.parentElement.remove()">✖</button>
+            <input type="number" id="comp_quantity_${idx}" value="${comp.quantity}" placeholder="Количество (г)" step="0.1" style="width:100px" onchange="updateDishFlagsAvailability()">
+            <button type="button" onclick="removeComponent(this, ${idx})">✖</button>
         `;
         document.getElementById('componentsContainer').appendChild(div);
     }
     if (d.components.length === 0) addComponent();
+
+    const checkboxes = document.querySelectorAll('#dishFlagsContainer input');
+    checkboxes.forEach(cb => {
+        cb.checked = d.flags && d.flags.includes(cb.value);
+    });
+
+    await updateDishFlagsAvailability();
+
     document.getElementById('dishModal').style.display = 'block';
 }
 
@@ -278,17 +337,59 @@ function closeDishModal() {
     document.getElementById('dishModal').style.display = 'none';
 }
 
+async function updateDishFlagsAvailability() {
+    const components = getComponents();
+
+    if (components.length === 0) {
+        document.querySelectorAll('#dishFlagsContainer input').forEach(cb => {
+            cb.disabled = true;
+            cb.checked = false;
+        });
+        return;
+    }
+
+    const productsRes = await fetch('/api/products');
+    const allProducts = await productsRes.json();
+
+    let allVegan = true;
+    let allGlutenFree = true;
+    let allSugarFree = true;
+
+    for (const comp of components) {
+        const product = allProducts.find(p => p.id === comp.productId);
+        if (!product) continue;
+
+        if (!product.flags.includes('Веган')) allVegan = false;
+        if (!product.flags.includes('Без глютена')) allGlutenFree = false;
+        if (!product.flags.includes('Без сахара')) allSugarFree = false;
+    }
+
+    const veganCheckbox = document.querySelector('#dishFlagsContainer input[value="Веган"]');
+    const glutenCheckbox = document.querySelector('#dishFlagsContainer input[value="Без глютена"]');
+    const sugarCheckbox = document.querySelector('#dishFlagsContainer input[value="Без сахара"]');
+
+    if (veganCheckbox) veganCheckbox.disabled = !allVegan;
+    if (glutenCheckbox) glutenCheckbox.disabled = !allGlutenFree;
+    if (sugarCheckbox) sugarCheckbox.disabled = !allSugarFree;
+
+    if (!allVegan && veganCheckbox && veganCheckbox.checked) veganCheckbox.checked = false;
+    if (!allGlutenFree && glutenCheckbox && glutenCheckbox.checked) glutenCheckbox.checked = false;
+    if (!allSugarFree && sugarCheckbox && sugarCheckbox.checked) sugarCheckbox.checked = false;
+}
 document.getElementById('dishForm').onsubmit = async (e) => {
     e.preventDefault();
     const id = document.getElementById('dishId').value;
     const photos = document.getElementById('dishPhotos').value.split(',').map(s => s.trim()).filter(s => s);
     const components = getComponents();
     
+    // ВАЖНО: собираем выбранные флаги
+    const selectedFlags = Array.from(document.querySelectorAll('#dishFlagsContainer input:checked')).map(cb => cb.value);
+
     if (components.length === 0) {
         alert('Добавьте хотя бы один продукт в состав блюда');
         return;
     }
-    
+
     const data = {
         name: document.getElementById('dishName').value,
         portionSize: parseFloat(document.getElementById('dishPortion').value),
@@ -299,7 +400,7 @@ document.getElementById('dishForm').onsubmit = async (e) => {
         carbs: document.getElementById('dishCarbs').value ? parseFloat(document.getElementById('dishCarbs').value) : null,
         components: components,
         photos: photos,
-        flags: []
+        flags: selectedFlags
     };
     
     const res = await fetch(id ? `/api/dishes/${id}` : '/api/dishes', {
