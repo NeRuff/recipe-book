@@ -1,6 +1,8 @@
 package com.example.recipe_book_backend.entity;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
+
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -18,6 +20,7 @@ public class Dish {
     @ElementCollection
     @CollectionTable(name = "dish_photos", joinColumns = @JoinColumn(name = "dish_id"))
     @Column(name = "photo_url", length = 1000)
+    @Size(max = 5, message = "Максимум 5 фото")
     private List<String> photos = new ArrayList<>();
 
     @Column(nullable = false)

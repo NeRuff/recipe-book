@@ -81,10 +81,10 @@
         <form id="productForm">
             <input type="hidden" id="productId">
             <label>Название*: <input type="text" id="prodName" required minlength="2"></label>
-            <label>Калорийность (ккал/100г)*: <input type="number" id="prodCalories" step="0.1" required></label>
-            <label>Белки (г/100г)*: <input type="number" id="prodProteins" step="0.1" required></label>
-            <label>Жиры (г/100г)*: <input type="number" id="prodFats" step="0.1" required></label>
-            <label>Углеводы (г/100г)*: <input type="number" id="prodCarbs" step="0.1" required></label>
+            <label>Калорийность (ккал/100г)*: <input type="number" id="prodCalories" step="0.01" required></label>
+            <label>Белки (г/100г)*: <input type="number" id="prodProteins" step="0.01" required></label>
+            <label>Жиры (г/100г)*: <input type="number" id="prodFats" step="0.01" required></label>
+            <label>Углеводы (г/100г)*: <input type="number" id="prodCarbs" step="0.01" required></label>
             <label>Состав: <textarea id="prodComposition"></textarea></label>
             <label>Категория*:
                 <select id="prodCategory" required>
@@ -124,7 +124,7 @@
         <form id="dishForm">
             <input type="hidden" id="dishId">
             <label>Название*: <input type="text" id="dishName" required minlength="2"></label>
-            <label>Размер порции (г)*: <input type="number" id="dishPortion" step="0.1" required></label>
+            <label>Размер порции (г)*: <input type="number" id="dishPortion" step="0.01" required></label>
             <label>Категория:
                 <select id="dishCategorySelect">
                     <option value="">Выбрать</option>
@@ -143,10 +143,10 @@
                 <button type="button" onclick="addComponent()">+ Добавить продукт</button>
             </div>
             <label>КБЖУ (можно скорректировать):</label>
-            <label>Калории: <input type="number" id="dishCalories" step="0.1"></label>
-            <label>Белки: <input type="number" id="dishProteins" step="0.1"></label>
-            <label>Жиры: <input type="number" id="dishFats" step="0.1"></label>
-            <label>Углеводы: <input type="number" id="dishCarbs" step="0.1"></label>
+            <label>Калории: <input type="number" id="dishCalories" step="0.01"></label>
+            <label>Белки: <input type="number" id="dishProteins" step="0.01"></label>
+            <label>Жиры: <input type="number" id="dishFats" step="0.01"></label>
+            <label>Углеводы: <input type="number" id="dishCarbs" step="0.01"></label>
             <label>Фото (URL, через запятую): <input type="text" id="dishPhotos"></label>
             <button type="submit">Сохранить</button>
         </form>

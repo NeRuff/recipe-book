@@ -138,6 +138,8 @@ button:hover {
     box-shadow: 0 5px 20px rgba(0,0,0,0.1);
     transition: all 0.3s;
     border: 1px solid #e0e0e0;
+    overflow: visible;
+    height: auto;
 }
 
 .card:hover {
@@ -264,11 +266,30 @@ button:hover {
 
 .photos-container {
     display: flex;
-    gap: 8px;
+    flex-direction: row;
     flex-wrap: wrap;
+    gap: 8px;
     margin: 10px 0;
-    align-items: center;
+    align-items: flex-start;
+    max-width: 100%;
+    overflow: visible;
+    min-height: 70px;
+    height: auto;
 }
+.photos-container::-webkit-scrollbar {
+    height: 4px;
+}
+
+.photos-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+.photos-container::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 10px;
+}
+
 
 .product-photo, .dish-photo {
     width: 60px;
@@ -276,8 +297,15 @@ button:hover {
     object-fit: cover;
     border-radius: 8px;
     border: 1px solid #ddd;
+    flex-shrink: 0;
+    display: block;
 }
 
+.photo-count {
+    font-size: 11px;
+    color: #888;
+    margin-left: 5px;
+}
 .no-photo {
     color: #999;
     font-size: 12px;

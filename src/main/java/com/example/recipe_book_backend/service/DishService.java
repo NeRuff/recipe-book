@@ -37,12 +37,14 @@ public class DishService {
         dish.setPortionSize(dto.getPortionSize());
 
         String categoryFromMacro = extractCategoryFromMacro(dto.getName());
+
+
         if (dto.getCategory() != null && !dto.getCategory().isEmpty()) {
             dish.setCategory(dto.getCategory());
         } else if (categoryFromMacro != null) {
             dish.setCategory(categoryFromMacro);
         } else {
-            dish.setCategory(dto.getCategory());
+            dish.setCategory("Второе");
         }
 
         List<DishProduct> components = buildComponents(dish, dto.getComponents());
@@ -78,6 +80,7 @@ public class DishService {
         dish.setPortionSize(dto.getPortionSize());
 
         String categoryFromMacro = extractCategoryFromMacro(dto.getName());
+
         if (dto.getCategory() != null && !dto.getCategory().isEmpty()) {
             dish.setCategory(dto.getCategory());
         } else if (categoryFromMacro != null) {

@@ -21,14 +21,20 @@ async function loadProducts() {
 function renderProducts(products) {
     const container = document.getElementById('productsList');
     container.innerHTML = products.map(p => {
+        console.log(`Продукт "${p.name}" имеет ${p.photos?.length || 0} фото:`, p.photos);
+
         const createdAt = p.createdAt ? new Date(p.createdAt).toLocaleString('ru-RU') : '—';
         const updatedAt = p.updatedAt ? new Date(p.updatedAt).toLocaleString('ru-RU') : '—';
+
+        const displayPhotos = p.photos?.slice(0, 5) || [];
+        const hasMore = p.photos?.length > 5;
 
         return `
         <div class="card">
             <h3>${escapeHtml(p.name)}</h3>
             <div class="photos-container">
-                ${p.photos && p.photos.length ? p.photos.slice(0, 3).map(photo => `<img src="${escapeHtml(photo)}" class="product-photo" onerror="this.style.display='none'">`).join('') : '<div class="no-photo">📷 Нет фото</div>'}
+                ${displayPhotos.length ? displayPhotos.map(photo => `<img src="${escapeHtml(photo)}" class="product-photo" onerror="this.style.display='none'">`).join('') : '<div class="no-photo">📷 Нет фото</div>'}
+                ${hasMore ? `<span class="more-photos">+${p.photos.length - 5}</span>` : ''}
             </div>
             <p>🔥 ${p.calories} ккал | 🥩 ${p.proteins}g | 🧈 ${p.fats}g | 🍚 ${p.carbs}g</p>
             <p>📁 ${p.category} | ${p.cookingRequirement}</p>
@@ -81,7 +87,10 @@ document.getElementById('productForm').onsubmit = async (e) => {
     const id = document.getElementById('productId').value;
     const flags = Array.from(document.querySelectorAll('#productForm input[type="checkbox"]:checked')).map(cb => cb.value);
     const photos = document.getElementById('prodPhotos').value.split(',').map(s => s.trim()).filter(s => s);
-    
+    if (photos.length > 5) {
+        alert('Максимум 5 фото. Лишние будут удалены.');
+        photos = photos.slice(0, 5);
+    }
     const proteins = parseFloat(document.getElementById('prodProteins').value);
     const fats = parseFloat(document.getElementById('prodFats').value);
     const carbs = parseFloat(document.getElementById('prodCarbs').value);
@@ -152,11 +161,15 @@ function renderDishes(dishes) {
         const createdAt = d.createdAt ? new Date(d.createdAt).toLocaleString('ru-RU') : '—';
         const updatedAt = d.updatedAt ? new Date(d.updatedAt).toLocaleString('ru-RU') : '—';
 
+        const displayPhotos = d.photos?.slice(0, 5) || [];
+        const hasMore = d.photos?.length > 5;
+
         return `
         <div class="card">
             <h3>${escapeHtml(d.name)}</h3>
             <div class="photos-container">
-                ${d.photos && d.photos.length ? d.photos.slice(0, 3).map(photo => `<img src="${escapeHtml(photo)}" class="dish-photo" onerror="this.style.display='none'">`).join('') : '<div class="no-photo">📷 Нет фото</div>'}
+                ${displayPhotos.length ? displayPhotos.map(photo => `<img src="${escapeHtml(photo)}" class="dish-photo" onerror="this.style.display='none'">`).join('') : '<div class="no-photo">📷 Нет фото</div>'}
+                ${hasMore ? `<span class="more-photos">+${d.photos.length - 5}</span>` : ''}
             </div>
             <p>🍽️ Порция: ${d.portionSize}г</p>
             <p>🔥 ${Math.round(d.calories)} ккал | 🥩 ${d.proteins.toFixed(1)}g | 🧈 ${d.fats.toFixed(1)}g | 🍚 ${d.carbs.toFixed(1)}g</p>
@@ -181,7 +194,6 @@ function renderDishes(dishes) {
         </div>
     `}).join('');
 }
-
 async function loadProductsForSelect() {
     const res = await fetch('/api/products');
     productOptions = await res.json();

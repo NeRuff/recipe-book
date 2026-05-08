@@ -2,7 +2,6 @@ package com.example.recipe_book_backend.dto;
 
 import jakarta.validation.constraints.*;
 import java.util.List;
-import java.util.Map;
 
 public class DishDTO {
     private Long id;
@@ -26,7 +25,6 @@ public class DishDTO {
     @Positive(message = "Размер порции должен быть больше 0")
     private Double portionSize;
 
-    @NotBlank(message = "Категория обязательна")
     private String category;
 
     private List<String> flags;
@@ -44,6 +42,7 @@ public class DishDTO {
         public Double getQuantity() { return quantity; }
         public void setQuantity(Double quantity) { this.quantity = quantity; }
     }
+
 
     public Long getId() { return id; }
     public void setId(Long id) { this.id = id; }
