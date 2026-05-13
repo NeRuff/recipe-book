@@ -4,6 +4,7 @@ import com.example.recipe_book_backend.dto.ProductDTO;
 import com.example.recipe_book_backend.entity.Product;
 import com.example.recipe_book_backend.service.ProductService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import jakarta.validation.Valid;
@@ -16,6 +17,11 @@ import java.util.Map;
 public class ProductController {
     @Autowired
     private ProductService productService;
+
+    @ExceptionHandler(RuntimeException.class)
+    public ResponseEntity<String> handleRuntimeException(RuntimeException e) {
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(e.getMessage());
+    }
 
     @GetMapping
     public ResponseEntity<List<Product>> getAllProducts() {
