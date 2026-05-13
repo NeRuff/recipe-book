@@ -73,7 +73,7 @@ class RecipeBookIntegrationTest {
                     "Картофель", 77.0, 2.0, 0.4, 16.3,
                     "Овощи", "Требует приготовления",
                     List.of("Веган", "Без глютена", "Без сахара"),
-                    List.of("https://example.com/potato.jpg")
+                    List.of("https://downloader.disk.yandex.ru/preview/56682f0ccaff37d521e1345bbab851fb55833b1f3309778d1b5884222eeb23b1/6a04a23c/knMVnybnxiATWES34Ov9M1-08ACFMZo9E4eabBzoK3a1xM7IN3bLHAaZtBsPVWQFewcKqH-zwa2e-6ktg-iiEg%3D%3D?uid=0&filename=kartoshqa.png&disposition=inline&hash=&limit=0&content_type=image%2Fpng&owner_uid=0&tknv=v3&size=1920x918")
             );
 
             MvcResult result = mockMvc.perform(post("/api/products")
@@ -237,26 +237,6 @@ class RecipeBookIntegrationTest {
         }
 
         @Test
-        @Order(10)
-        @DisplayName("Граничное значение: создание продукта с максимальным количеством фото (5)")
-        void testCreateProductWithMaxPhotos() throws Exception {
-            ProductDTO dto = createProductDto(
-                    "Продукт с фото", 100.0, 10.0, 5.0, 10.0,
-                    "Овощи", "Готовый к употреблению",
-                    List.of(), List.of("url1", "url2", "url3", "url4", "url5")
-            );
-
-            MvcResult result = mockMvc.perform(post("/api/products")
-                            .contentType(MediaType.APPLICATION_JSON)
-                            .content(objectMapper.writeValueAsString(dto)))
-                    .andExpect(status().isOk())
-                    .andReturn();
-
-            Product product = objectMapper.readValue(result.getResponse().getContentAsString(), Product.class);
-            assertEquals(5, product.getPhotos().size());
-        }
-
-        @Test
         @Order(11)
         @DisplayName("Редактирование продукта")
         void testUpdateProduct() throws Exception {
@@ -363,6 +343,136 @@ class RecipeBookIntegrationTest {
                             .contentType(MediaType.APPLICATION_JSON)
                             .content(objectMapper.writeValueAsString(dto)))
                     .andExpect(status().is5xxServerError());
+        }
+
+        @Test
+        @Order(16)
+        @DisplayName("Негативный сценарий: добавление 6 фото - ошибка валидации")
+        void testCreateProductWithSixPhotos() throws Exception {
+            ProductDTO dto = createProductDto(
+                    "Продукт с 6 фото", 100.0, 10.0, 5.0, 10.0,
+                    "Овощи", "Готовый к употреблению",
+                    List.of(),
+                    List.of("url1", "url2", "url3", "url4", "url5", "url6")
+            );
+
+            mockMvc.perform(post("/api/products")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(dto)))
+                    .andExpect(status().is5xxServerError());
+        }
+
+        @Test
+        @Order(17)
+        @DisplayName("Позитивный сценарий: добавление 5 фото - успешно")
+        void testCreateProductWithFivePhotos() throws Exception {
+            ProductDTO dto = createProductDto(
+                    "Продукт с 5 фото", 100.0, 10.0, 5.0, 10.0,
+                    "Овощи", "Готовый к употреблению",
+                    List.of(),
+                    List.of("url1", "url2", "url3", "url4", "url5")
+            );
+
+            MvcResult result = mockMvc.perform(post("/api/products")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(dto)))
+                    .andExpect(status().isOk())
+                    .andReturn();
+
+            Product product = objectMapper.readValue(result.getResponse().getContentAsString(), Product.class);
+            assertEquals(5, product.getPhotos().size());
+        }
+
+        @Test
+        @Order(18)
+        @DisplayName("Граничное значение: название продукта из 2 символов (минимум)")
+        void testCreateProductWithMinNameLength() throws Exception {
+            ProductDTO dto = createProductDto(
+                    "аб", 100.0, 10.0, 5.0, 10.0,
+                    "Овощи", "Готовый к употреблению",
+                    List.of(), List.of()
+            );
+
+            MvcResult result = mockMvc.perform(post("/api/products")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(dto)))
+                    .andExpect(status().isOk())
+                    .andReturn();
+
+            Product product = objectMapper.readValue(result.getResponse().getContentAsString(), Product.class);
+            assertEquals("аб", product.getName());
+        }
+
+        @Test
+        @Order(19)
+        @DisplayName("Граничное значение: название продукта из 1 символа (меньше минимума - ошибка)")
+        void testCreateProductWithOneCharName() throws Exception {
+            ProductDTO dto = createProductDto(
+                    "а", 100.0, 10.0, 5.0, 10.0,
+                    "Овощи", "Готовый к употреблению",
+                    List.of(), List.of()
+            );
+
+            mockMvc.perform(post("/api/products")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(dto)))
+                    .andExpect(status().isBadRequest());
+        }
+
+        @Test
+        @Order(20)
+        @DisplayName("Граничное значение: белки = 0 (минимум)")
+        void testCreateProductWithZeroProteins() throws Exception {
+            ProductDTO dto = createProductDto(
+                    "Нулевые белки", 100.0, 0.0, 10.0, 10.0,
+                    "Овощи", "Готовый к употреблению",
+                    List.of(), List.of()
+            );
+
+            MvcResult result = mockMvc.perform(post("/api/products")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(dto)))
+                    .andExpect(status().isOk())
+                    .andReturn();
+
+            Product product = objectMapper.readValue(result.getResponse().getContentAsString(), Product.class);
+            assertEquals(0.0, product.getProteins());
+        }
+
+        @Test
+        @Order(21)
+        @DisplayName("Граничное значение: белки = 100 (максимум)")
+        void testCreateProductWithMaxProteins() throws Exception {
+            ProductDTO dto = createProductDto(
+                    "Максимум белков", 500.0, 100.0, 0.0, 0.0,
+                    "Овощи", "Готовый к употреблению",
+                    List.of(), List.of()
+            );
+
+            MvcResult result = mockMvc.perform(post("/api/products")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(dto)))
+                    .andExpect(status().isOk())
+                    .andReturn();
+
+            Product product = objectMapper.readValue(result.getResponse().getContentAsString(), Product.class);
+            assertEquals(100.0, product.getProteins());
+        }
+
+        @Test
+        @Order(22)
+        @DisplayName("Граничное значение: белки = 101 (больше максимума - ошибка)")
+        void testCreateProductWithTooHighProteins() throws Exception {
+            ProductDTO dto = createProductDto(
+                    "Слишком много белков", 500.0, 101.0, 0.0, 0.0,
+                    "Овощи", "Готовый к употреблению",
+                    List.of(), List.of()
+            );
+
+            mockMvc.perform(post("/api/products")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(dto)))
+                    .andExpect(status().isBadRequest());
         }
     }
 
@@ -718,6 +828,26 @@ class RecipeBookIntegrationTest {
 
             Dish dish = objectMapper.readValue(result.getResponse().getContentAsString(), Dish.class);
             assertEquals("Десерт", dish.getCategory());
+        }
+
+        @Test
+        @Order(17)
+        @DisplayName("Позитивный сценарий: добавление 5 фото для блюда - успешно")
+        void testCreateDishWithFivePhotos() throws Exception {
+            DishDTO dto = createDishDto(
+                    "Блюдо с 5 фото", List.of(createComponent(potatoId, 100.0)),
+                    200.0, "Второе", List.of()
+            );
+            dto.setPhotos(List.of("url1", "url2", "url3", "url4", "url5"));
+
+            MvcResult result = mockMvc.perform(post("/api/dishes")
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .content(objectMapper.writeValueAsString(dto)))
+                    .andExpect(status().isOk())
+                    .andReturn();
+
+            Dish dish = objectMapper.readValue(result.getResponse().getContentAsString(), Dish.class);
+            assertEquals(5, dish.getPhotos().size());
         }
     }
 
